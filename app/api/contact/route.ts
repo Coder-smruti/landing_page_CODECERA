@@ -7,6 +7,33 @@ type FormPayload = {
   businessType: string
 }
 
+async function sendViaWeb3Forms(payload: FormPayload) {
+  const accessKey = process.env.WEB3FORMS_ACCESS_KEY
+  if (!accessKey) return false
+
+  const response = await fetch("https://api.web3forms.com/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      access_key: accessKey,
+      subject: "New Website Quote Request - Codecera",
+      from_name: payload.name,
+      phone: payload.phone,
+      message: [
+        `Name: ${payload.name}`,
+        `Phone: ${payload.phone}`,
+        `Business Type: ${payload.businessType}`,
+      ].join("\n"),
+    }),
+  })
+
+  const data = await response.json()
+  if (!response.ok || !data.success) {
+    throw new Error(data.message || "Web3Forms delivery failed")
+  }
+  return true
+}
+
 function resolveSiteUrl(request: Request) {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
     return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")
@@ -52,23 +79,10 @@ async function sendViaFormSubmit(payload: FormPayload, siteUrl: string) {
   const data = await response.json().catch(() => null)
 
   if (!data || (data.success !== "true" && data.success !== true)) {
-    const needsActivation =
-      !data?.success ||
-      data.message?.toLowerCase().includes("activate") ||
-      data.message?.toLowerCase().includes("confirm")
-
-    if (needsActivation) {
-      throw new Error(
-        "Almost ready — check icodecera@gmail.com (inbox & spam) for a FormSubmit activation email and click the link. Then submit again."
-      )
-    }
-
-    throw new Error(
-      data?.message || "Could not send your request. Please try WhatsApp or call us directly."
-    )
+    throw new Error(data?.message || "FormSubmit delivery failed")
   }
 
-  return data
+  return true
 }
 
 export async function POST(request: Request) {
@@ -86,14 +100,24 @@ export async function POST(request: Request) {
     }
 
     const payload: FormPayload = { name, phone, businessType }
-    const siteUrl = resolveSiteUrl(request)
 
+    if (await sendViaWeb3Forms(payload)) {
+      return NextResponse.json({ success: true })
+    }
+
+    const siteUrl = resolveSiteUrl(request)
     await sendViaFormSubmit(payload, siteUrl)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Contact form error:", error)
-    const message =
+    let message =
       error instanceof Error ? error.message : "Failed to send your request."
+
+    if (message.toLowerCase().includes("activation")) {
+      message =
+        "Form email not activated yet. Add WEB3FORMS_ACCESS_KEY in Vercel (recommended) — see setup at web3forms.com with icodecera@gmail.com"
+    }
+
     return NextResponse.json({ error: message }, { status: 502 })
   }
 }
