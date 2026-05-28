@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { CONTACT_FORM_ID } from "@/lib/scroll-to-form"
 import { LANDING } from "@/lib/landing-copy"
+import { submitLeadForm } from "@/lib/submit-lead-form"
 import { trackFormSubmission } from "@/lib/gtm"
 import { cn } from "@/lib/utils"
 
@@ -33,17 +34,7 @@ export function LeadForm({ variant = "standalone", className }: LeadFormProps) {
     setError("")
 
     try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      })
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        const message = data.error || "Failed to submit form"
-        throw new Error(message)
-      }
+      await submitLeadForm(formData)
 
       setIsSubmitted(true)
       trackFormSubmission(formData.businessType)
