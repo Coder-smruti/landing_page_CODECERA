@@ -1,3 +1,8 @@
+import {
+  GOOGLE_ADS_CONVERSION_LABEL,
+  trackGoogleAdsConversion,
+} from "@/lib/google-ads"
+
 export const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID
 
 type GtmEvent = {
@@ -26,6 +31,18 @@ export function trackFormSubmission(businessType?: string) {
     event_label: businessType || "Website Quote",
     value: 1,
   })
+
+  if (GOOGLE_ADS_CONVERSION_LABEL) {
+    trackGoogleAdsConversion("conversion", {
+      event_category: "Lead Form",
+      event_label: businessType || "Website Quote",
+    })
+  } else {
+    trackGoogleAdsConversion("generate_lead", {
+      event_category: "Lead Form",
+      event_label: businessType || "Website Quote",
+    })
+  }
 }
 
 export function trackWhatsAppClick(source: string) {
@@ -35,6 +52,11 @@ export function trackWhatsAppClick(source: string) {
     event_label: source,
     value: 1,
   })
+
+  trackGoogleAdsConversion("whatsapp_click", {
+    event_category: "WhatsApp",
+    event_label: source,
+  })
 }
 
 export function trackPhoneClick(source: string) {
@@ -43,5 +65,10 @@ export function trackPhoneClick(source: string) {
     event_category: "Phone",
     event_label: source,
     value: 1,
+  })
+
+  trackGoogleAdsConversion("phone_click", {
+    event_category: "Phone",
+    event_label: source,
   })
 }
