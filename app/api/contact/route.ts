@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-import nodemailer from "nodemailer"
 import { CONTACT } from "@/lib/contact"
 
 type FormPayload = {
@@ -8,32 +7,27 @@ type FormPayload = {
   businessType: string
 }
 
-async function sendViaWeb3Forms(payload: FormPayload) {
-  const accessKey = process.env.WEB3FORMS_ACCESS_KEY
-  if (!accessKey) return null
-
-  const response = await fetch("https://api.web3forms.com/submit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      access_key: accessKey,
-      subject: "New Website Quote Request - Codecera",
-      from_name: payload.name,
-      phone: payload.phone,
-      message: `Business Type: ${payload.businessType}\nPhone: ${payload.phone}\nName: ${payload.name}`,
-    }),
-  })
-
-  const data = await response.json()
-  if (!response.ok || !data.success) {
-    throw new Error(data.message || "Web3Forms delivery failed")
+function resolveSiteUrl(request: Request) {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")
   }
-  return data
+
+  const origin = request.headers.get("origin")
+  if (origin) return origin.replace(/\/$/, "")
+
+  const referer = request.headers.get("referer")
+  if (referer) {
+    try {
+      return new URL(referer).origin
+    } catch {
+      // ignore invalid referer
+    }
+  }
+
+  return "https://web.codecera.com"
 }
 
-async function sendViaFormSubmit(payload: FormPayload) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-
+async function sendViaFormSubmit(payload: FormPayload, siteUrl: string) {
   const response = await fetch(
     `https://formsubmit.co/ajax/${CONTACT.formRecipientEmail}`,
     {
@@ -56,45 +50,25 @@ async function sendViaFormSubmit(payload: FormPayload) {
   )
 
   const data = await response.json().catch(() => null)
+
   if (!data || (data.success !== "true" && data.success !== true)) {
+    const needsActivation =
+      !data?.success ||
+      data.message?.toLowerCase().includes("activate") ||
+      data.message?.toLowerCase().includes("confirm")
+
+    if (needsActivation) {
+      throw new Error(
+        "Almost ready — check icodecera@gmail.com (inbox & spam) for a FormSubmit activation email and click the link. Then submit again."
+      )
+    }
+
     throw new Error(
-      data?.message ||
-        "Email delivery failed. Check icodecera@gmail.com and activate FormSubmit if this is the first submission."
+      data?.message || "Could not send your request. Please try WhatsApp or call us directly."
     )
   }
+
   return data
-}
-
-async function sendViaSmtp(payload: FormPayload) {
-  const smtpUser = process.env.SMTP_USER
-  const smtpPass = process.env.SMTP_PASS
-  if (!smtpUser || !smtpPass) return null
-
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: Number(process.env.SMTP_PORT || 587),
-    secure: false,
-    auth: { user: smtpUser, pass: smtpPass },
-  })
-
-  await transporter.sendMail({
-    from: `"Codecera Website" <${smtpUser}>`,
-    to: CONTACT.formRecipientEmail,
-    replyTo: CONTACT.email,
-    subject: "New Website Quote Request - Codecera",
-    text: [
-      `Name: ${payload.name}`,
-      `Phone: ${payload.phone}`,
-      `Business Type: ${payload.businessType}`,
-    ].join("\n"),
-    html: `
-      <h2>New Website Quote Request</h2>
-      <p><strong>Name:</strong> ${payload.name}</p>
-      <p><strong>Phone:</strong> ${payload.phone}</p>
-      <p><strong>Business Type:</strong> ${payload.businessType}</p>
-    `,
-  })
-  return true
 }
 
 export async function POST(request: Request) {
@@ -112,11 +86,9 @@ export async function POST(request: Request) {
     }
 
     const payload: FormPayload = { name, phone, businessType }
+    const siteUrl = resolveSiteUrl(request)
 
-    if (await sendViaSmtp(payload)) return NextResponse.json({ success: true })
-    if (await sendViaWeb3Forms(payload)) return NextResponse.json({ success: true })
-
-    await sendViaFormSubmit(payload)
+    await sendViaFormSubmit(payload, siteUrl)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error("Contact form error:", error)
