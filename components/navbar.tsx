@@ -36,18 +36,18 @@ export function Navbar() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? "glass border-b shadow-sm" : "bg-background/80 backdrop-blur-md"
+          isScrolled ? "navbar-brand-scrolled" : "navbar-brand"
         }`}
       >
-        <div className="container mx-auto px-4">
-          <div className="flex h-14 items-center justify-between md:h-16">
+        <div className="container relative mx-auto px-4">
+          <div className="flex h-14 items-center justify-between md:h-[4.25rem]">
             <Link href="/" className="relative z-50 flex items-center">
               <Image
                 src={CONTACT.logo}
                 alt="Codecera - Website Development Chennai"
-                width={100}
-                height={32}
-                className="h-6 w-auto md:h-8"
+                width={140}
+                height={48}
+                className="h-8 w-auto md:h-10"
                 priority
               />
             </Link>
@@ -57,7 +57,7 @@ export function Navbar() {
                 <Link
                   key={link.name}
                   href={link.href}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  className="text-sm font-medium text-slate-300 transition-colors hover:text-cyan-300"
                 >
                   {link.name}
                 </Link>
@@ -67,12 +67,15 @@ export function Navbar() {
             <div className="hidden items-center gap-3 md:flex">
               <a
                 href={`tel:${CONTACT.phoneTel}`}
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+                className="flex items-center gap-1.5 text-sm text-slate-300 transition-colors hover:text-white"
               >
-                <Phone className="size-4" />
+                <Phone className="size-4 text-cyan-400" />
                 <span className="hidden lg:inline">{CONTACT.phone}</span>
               </a>
-              <ScrollToFormButton size="sm" className="glow-blue text-xs font-semibold lg:text-sm">
+              <ScrollToFormButton
+                size="sm"
+                className="bg-gradient-to-r from-sky-500 to-emerald-500 font-semibold text-white shadow-lg shadow-sky-500/25 hover:from-sky-400 hover:to-emerald-400 text-xs lg:text-sm"
+              >
                 {LANDING.ctaShort}
               </ScrollToFormButton>
             </div>
@@ -85,15 +88,15 @@ export function Navbar() {
               <div className="relative h-6 w-6">
                 <motion.span
                   animate={isOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
-                  className="absolute top-1 left-0 h-0.5 w-6 rounded-full bg-foreground"
+                  className="absolute top-1 left-0 h-0.5 w-6 rounded-full bg-white"
                 />
                 <motion.span
                   animate={isOpen ? { opacity: 0 } : { opacity: 1 }}
-                  className="absolute top-3 left-0 h-0.5 w-6 rounded-full bg-foreground"
+                  className="absolute top-3 left-0 h-0.5 w-6 rounded-full bg-white"
                 />
                 <motion.span
                   animate={isOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
-                  className="absolute top-5 left-0 h-0.5 w-6 rounded-full bg-foreground"
+                  className="absolute top-5 left-0 h-0.5 w-6 rounded-full bg-white"
                 />
               </div>
             </button>
@@ -110,7 +113,7 @@ export function Navbar() {
             className="fixed inset-0 z-40 md:hidden"
           >
             <div
-              className="absolute inset-0 bg-background/95 backdrop-blur-xl"
+              className="absolute inset-0 bg-[#0a1020]/98 backdrop-blur-xl"
               onClick={() => setIsOpen(false)}
             />
             <motion.div
@@ -125,22 +128,22 @@ export function Navbar() {
                     key={link.name}
                     href={link.href}
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center justify-between rounded-xl px-4 py-3 text-lg font-medium hover:bg-muted/50"
+                    className="flex items-center justify-between rounded-xl px-4 py-3 text-lg font-medium text-white hover:bg-white/10"
                   >
                     {link.name}
-                    <ChevronRight className="size-5 text-muted-foreground" />
+                    <ChevronRight className="size-5 text-cyan-400" />
                   </Link>
                 ))}
                 <a
                   href={`tel:${CONTACT.phoneTel}`}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-muted-foreground"
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-slate-300"
                 >
-                  <Phone className="size-5" />
+                  <Phone className="size-5 text-cyan-400" />
                   {CONTACT.phone}
                 </a>
                 <ScrollToFormButton
                   size="lg"
-                  className="glow-blue mt-2 h-14 w-full font-semibold"
+                  className="mt-2 h-14 w-full bg-gradient-to-r from-sky-500 to-emerald-500 font-semibold text-white"
                   onNavigate={() => setIsOpen(false)}
                 >
                   {LANDING.cta}
