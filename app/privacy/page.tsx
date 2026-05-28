@@ -17,7 +17,7 @@ export default function PrivacyPage() {
             ← Back to Codecera
           </Link>
           <Link
-            href="/#contact"
+            href="/contact"
             className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground md:text-sm"
           >
             Get Free Quote

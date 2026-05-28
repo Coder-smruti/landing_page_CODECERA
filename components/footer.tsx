@@ -7,14 +7,9 @@ import { MessageCircle, Phone, Mail, MapPin, Instagram, Linkedin, Twitter } from
 import { CONTACT } from "@/lib/contact"
 import { getWhatsAppUrl } from "@/lib/whatsapp"
 import { trackWhatsAppClick, trackPhoneClick } from "@/lib/gtm"
+import { FOOTER_QUICK_LINKS } from "@/lib/nav-links"
 
-const quickLinks = [
-  { name: "Portfolio", href: "#portfolio" },
-  { name: "Pricing", href: "#pricing" },
-  { name: "Why Us", href: "#why-codecera" },
-  { name: "FAQ", href: "#faq" },
-  { name: "Get Quote", href: "#contact" },
-]
+const quickLinks = FOOTER_QUICK_LINKS
 
 const services = [
   "Business Websites",

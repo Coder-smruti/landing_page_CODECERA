@@ -8,13 +8,9 @@ import { Phone, ChevronRight } from "lucide-react"
 import { ScrollToFormButton } from "@/components/scroll-to-form-button"
 import { CONTACT } from "@/lib/contact"
 import { LANDING } from "@/lib/landing-copy"
+import { NAV_LINKS } from "@/lib/nav-links"
 
-const navLinks = [
-  { name: "Portfolio", href: "#portfolio" },
-  { name: "Pricing", href: "#pricing" },
-  { name: "Why Us", href: "#why-codecera" },
-  { name: "FAQ", href: "#faq" },
-]
+const navLinks = NAV_LINKS
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)

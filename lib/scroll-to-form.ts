@@ -2,7 +2,10 @@ export const CONTACT_FORM_ID = "contact"
 
 export function scrollToContactForm() {
   const formSection = document.getElementById(CONTACT_FORM_ID)
-  if (!formSection) return
+  if (!formSection) {
+    window.location.href = "/contact"
+    return
+  }
 
   formSection.scrollIntoView({ behavior: "smooth", block: "start" })
 
